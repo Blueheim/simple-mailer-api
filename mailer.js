@@ -24,7 +24,7 @@ const validate = body => {
       .required()
       .error(errors => {
         return {
-          message: 'Email doit être renseigné et valide',
+          message: 'A valid email is needed',
         };
       }),
     message: Joi.string()
@@ -32,14 +32,14 @@ const validate = body => {
       .required()
       .error(errors => {
         return {
-          message: 'Message doit être renseigné et ne pas dépasser 300 caractères',
+          message: 'A valid message with a maximum of 300 characters is needed',
         };
       }),
     recaptcha: Joi.string()
       .required()
       .error(errors => {
         return {
-          message: 'Veuillez prouver votre humanité',
+          message: 'Please, confirm your humanity',
         };
       }),
   };
@@ -78,11 +78,11 @@ app.post('/mail', async (req, res) => {
     const resData = await fetchResult.json();
 
     if (!resData.success) {
-      res.status(400).json({ message: 'Echec de la vérification, seriez-vous un robot ? ' });
+      res.status(400).json({ message: 'Verification failed, are you a bot ? ' });
       return;
     }
   } catch (err) {
-    res.status(500).json({ message: 'Le service mail est temporairement indisponible' });
+    res.status(500).json({ message: 'Mail service is temporarily unavailable' });
     return;
   }
 
@@ -99,7 +99,7 @@ app.post('/mail', async (req, res) => {
       res.json({ message: 'done' });
     })
     .catch(err => {
-      res.status(500).json({ message: 'Le service mail est temporairement indisponible' });
+      res.status(500).json({ message: 'Mail service is temporarily unavailable' });
     });
 });
 
