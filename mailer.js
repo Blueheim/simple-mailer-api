@@ -4,7 +4,7 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 const sendgridTransport = require('nodemailer-sendgrid-transport');
 const Joi = require('Joi');
-const fetch = require("node-fetch");
+const fetch = require('node-fetch');
 const { URL, URLSearchParams } = require('url');
 
 const recaptchaVerifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
@@ -39,7 +39,7 @@ const validate = body => {
       .required()
       .error(errors => {
         return {
-          message: 'Echec, seriez-vous un robot ?',
+          message: 'Veuillez prouver votre humanité',
         };
       }),
   };
@@ -57,7 +57,7 @@ app.use(
 
 app.use(express.json());
 
-app.post('/mail', (req, res) => {
+app.post('/mail', async (req, res) => {
   const { error } = validate(req.body);
 
   if (error) {
@@ -66,20 +66,26 @@ app.post('/mail', (req, res) => {
   }
 
   // Verify recaptcha
-  try{
+  try {
     const urlInstance = new URL(recaptchaVerifyUrl);
-    const params = new URLSearchParams(`secret=${RECAPTCHA_KEY}&response=${req.body.recaptcha}&remoteip=${req.connection.remoteAddress}`);
+    const params = new URLSearchParams(
+      `secret=${config.get('RECAPTCHA_KEY')}&response=${req.body.recaptcha}&remoteip=${req.connection.remoteAddress}`
+    );
     urlInstance.search = params;
 
     const fetchResult = await fetch(urlInstance);
 
-    const fetchData = await fetchResult.json();
+    const resData = await fetchResult.json();
 
-  } catch(err) {
+    if (!resData.success) {
+      res.status(400).json({ message: 'Echec de la vérification, seriez-vous un robot ? ' });
+      return;
+    }
+  } catch (err) {
     res.status(500).json({ message: 'Le service mail est temporairement indisponible' });
     return;
   }
- 
+
   //
 
   transporter
